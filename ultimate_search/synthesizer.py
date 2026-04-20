@@ -146,7 +146,7 @@ def extractive_brief(
             "### Executive answer\n"
             "I could not retrieve enough evidence from the enabled sources to answer this reliably.\n\n"
             "### Suggested next step\n"
-            "Enable web search via SearXNG, broaden the question, or add a more specific country, product, disease, or policy term."
+            "For market sizing and key-player questions, add a search key such as BRAVE_API_KEY, TAVILY_API_KEY, or SERPAPI_API_KEY in Streamlit secrets. You can also configure SEARXNG_URL if you run a SearXNG instance. The no-key web fallback can be too weak for niche B2B markets."
         )
 
     top_items = evidence[: min(6, len(evidence))]

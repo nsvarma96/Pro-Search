@@ -70,6 +70,25 @@ def lexical_similarity(question: str, document: str) -> float:
     return min(1.0, (coverage * 0.75) + (rare_bonus * 0.25))
 
 
+def ascii_ratio(text: str) -> float:
+    if not text:
+        return 1.0
+    ascii_chars = sum(1 for char in text if ord(char) < 128)
+    return ascii_chars / len(text)
+
+
+def passes_web_quality(item: EvidenceItem, request: ResearchRequest) -> bool:
+    text = f"{item.title} {item.snippet}".lower()
+    if ascii_ratio(text) < 0.75:
+        return False
+    country = request.country.lower().strip()
+    if country and request.require_country and country not in text:
+        return False
+    important_terms = [term for term in tokenize(request.question) if len(term) > 4]
+    matched = sum(1 for term in set(important_terms) if term in text)
+    return matched >= min(3, max(1, len(set(important_terms)) // 3))
+
+
 def rank_evidence(items: list[EvidenceItem], request: ResearchRequest) -> list[EvidenceItem]:
     if not items:
         return []
@@ -88,4 +107,10 @@ def rank_evidence(items: list[EvidenceItem], request: ResearchRequest) -> list[E
             + country_bonus,
         )
 
-    return sorted(items, key=lambda item: item.score, reverse=True)[: request.max_sources]
+    ranked = sorted(items, key=lambda item: item.score, reverse=True)
+    filtered = [
+        item
+        for item in ranked
+        if item.source_type != "web" or (item.score >= 20 and passes_web_quality(item, request))
+    ]
+    return filtered[: request.max_sources]

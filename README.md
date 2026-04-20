@@ -14,6 +14,11 @@ The app works as a general research workflow engine:
 
 - Mobile-friendly Streamlit UI
 - Source connectors for:
+  - Optional Brave Search API
+  - Optional Tavily Search API
+  - Optional SerpAPI Google results
+  - General web search through Bing RSS results
+  - Optional DuckDuckGo HTML fallback
   - PubMed / NCBI E-utilities
   - Europe PMC
   - ClinicalTrials.gov
@@ -84,8 +89,14 @@ CUSTOM_OPENAI_MODEL = "your-model-name"
 ## Optional Search Secrets
 
 ```toml
-# Optional: public web metasearch instance
+# Optional: public or private SearXNG metasearch instance.
+# This is not required; the app has a no-key general web search option.
 SEARXNG_URL = "https://your-searxng-instance/search"
+
+# Recommended for market sizing, competitor landscaping, and general consulting research
+BRAVE_API_KEY = "..."
+TAVILY_API_KEY = "..."
+SERPAPI_API_KEY = "..."
 ```
 
 If no LLM key is configured, the app still runs and generates an extractive, cited brief from retrieved sources.

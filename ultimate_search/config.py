@@ -16,6 +16,9 @@ def _secret(name: str, default: str = "") -> str:
 @dataclass(frozen=True)
 class AppConfig:
     searxng_url: str = ""
+    brave_api_key: str = ""
+    tavily_api_key: str = ""
+    serpapi_api_key: str = ""
     llm_provider: str = "auto"
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
@@ -38,6 +41,9 @@ class AppConfig:
     def from_streamlit(cls) -> "AppConfig":
         return cls(
             searxng_url=_secret("SEARXNG_URL"),
+            brave_api_key=_secret("BRAVE_API_KEY"),
+            tavily_api_key=_secret("TAVILY_API_KEY"),
+            serpapi_api_key=_secret("SERPAPI_API_KEY"),
             llm_provider=_secret("LLM_PROVIDER", "auto").lower(),
             openai_api_key=_secret("OPENAI_API_KEY"),
             openai_model=_secret("OPENAI_MODEL", "gpt-4o-mini"),

@@ -35,11 +35,17 @@ def sidebar_controls() -> tuple[ResearchRequest, AppConfig]:
 
     st.sidebar.divider()
     st.sidebar.subheader("Sources")
+    use_brave = st.sidebar.checkbox("Brave Search", value=True, help="Recommended for market and competitor questions. Requires BRAVE_API_KEY.")
+    use_tavily = st.sidebar.checkbox("Tavily Search", value=True, help="Good research search API. Requires TAVILY_API_KEY.")
+    use_serpapi = st.sidebar.checkbox("SerpAPI Google", value=False, help="Google results through SerpAPI. Requires SERPAPI_API_KEY.")
+    use_bing = st.sidebar.checkbox("Free web fallback", value=True, help="No-key Bing RSS results. Quality can vary.")
+    use_duckduckgo = st.sidebar.checkbox("DuckDuckGo fallback", value=False, help="No-key HTML search. May return no results if DuckDuckGo challenges the server.")
+    st.sidebar.caption("Biomedical sources are automatically skipped for non-healthcare questions.")
     use_pubmed = st.sidebar.checkbox("PubMed", value=True)
     use_europe_pmc = st.sidebar.checkbox("Europe PMC", value=True)
     use_clinical_trials = st.sidebar.checkbox("ClinicalTrials.gov", value=True)
     use_openfda = st.sidebar.checkbox("openFDA labels", value=True)
-    use_web = st.sidebar.checkbox("SearXNG web search", value=False)
+    use_web = st.sidebar.checkbox("SearXNG web search", value=False, help="Optional self-hosted/private metasearch. Requires SEARXNG_URL in Streamlit secrets.")
 
     st.sidebar.divider()
     st.sidebar.subheader("Behavior")
@@ -53,6 +59,11 @@ def sidebar_controls() -> tuple[ResearchRequest, AppConfig]:
         output_style=output_style,
         max_sources=max_sources,
         enabled_sources={
+            "brave": use_brave,
+            "tavily": use_tavily,
+            "serpapi": use_serpapi,
+            "bing": use_bing,
+            "duckduckgo": use_duckduckgo,
             "pubmed": use_pubmed,
             "europe_pmc": use_europe_pmc,
             "clinical_trials": use_clinical_trials,
