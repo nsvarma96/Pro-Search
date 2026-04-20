@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import requests
-from anthropic import Anthropic
-from openai import OpenAI
 
 from ultimate_search.config import AppConfig
 from ultimate_search.models import EvidenceItem, ResearchRequest, SearchPlan
@@ -82,15 +80,24 @@ Evidence:
 def call_provider(provider: str, prompt: str, config: AppConfig) -> str:
     system = "You produce source-grounded consulting research briefs with careful caveats."
     if provider == "anthropic":
-        client = Anthropic(api_key=config.anthropic_api_key)
-        response = client.messages.create(
-            model=config.anthropic_model,
-            max_tokens=1600,
-            temperature=0.2,
-            system=system,
-            messages=[{"role": "user", "content": prompt}],
+        response = requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": config.anthropic_api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json={
+                "model": config.anthropic_model,
+                "max_tokens": 1600,
+                "temperature": 0.2,
+                "system": system,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=120,
         )
-        return "\n".join(block.text for block in response.content if getattr(block, "type", "") == "text")
+        response.raise_for_status()
+        return "\n".join(block.get("text", "") for block in response.json().get("content", []) if block.get("type") == "text")
 
     if provider == "ollama":
         response = requests.post(
@@ -114,13 +121,18 @@ def call_provider(provider: str, prompt: str, config: AppConfig) -> str:
         "custom": (config.custom_openai_api_key, config.custom_openai_base_url, config.custom_openai_model),
     }
     api_key, base_url, model = provider_config[provider]
-    client = OpenAI(api_key=api_key, base_url=base_url)
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-        temperature=0.2,
+    response = requests.post(
+        base_url.rstrip("/") + "/chat/completions",
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json={
+            "model": model,
+            "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+            "temperature": 0.2,
+        },
+        timeout=120,
     )
-    return response.choices[0].message.content or ""
+    response.raise_for_status()
+    return response.json()["choices"][0]["message"].get("content", "")
 
 
 def extractive_brief(

@@ -95,8 +95,9 @@ If no LLM key is configured, the app still runs and generates an extractive, cit
 1. Push this folder to GitHub.
 2. Go to Streamlit Community Cloud.
 3. Create a new app pointing to `app.py`.
-4. Add optional secrets from above.
-5. Deploy.
+4. In Advanced settings, choose Python 3.12 or 3.11 if available.
+5. Add optional secrets from above.
+6. Deploy.
 
 ## Suggested Usage
 

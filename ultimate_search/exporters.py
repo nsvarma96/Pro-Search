@@ -2,21 +2,27 @@ from __future__ import annotations
 
 from io import BytesIO
 
-import pandas as pd
 from docx import Document
+from openpyxl import Workbook
 
 from ultimate_search.models import EvidenceItem
 
 
-def evidence_to_xlsx(df: pd.DataFrame) -> bytes:
+def evidence_to_xlsx(rows: list[dict]) -> bytes:
     buffer = BytesIO()
-    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        df.to_excel(writer, sheet_name="Evidence", index=False)
-        worksheet = writer.sheets["Evidence"]
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = "Evidence"
+    if rows:
+        headers = list(rows[0].keys())
+        worksheet.append(headers)
+        for row in rows:
+            worksheet.append([row.get(header, "") for header in headers])
         worksheet.freeze_panes = "A2"
         for column_cells in worksheet.columns:
             max_length = max(len(str(cell.value or "")) for cell in column_cells)
             worksheet.column_dimensions[column_cells[0].column_letter].width = min(max_length + 2, 55)
+    workbook.save(buffer)
     return buffer.getvalue()
 
 

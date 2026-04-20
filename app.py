@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import csv
 from datetime import datetime
+from io import StringIO
 
-import pandas as pd
 import streamlit as st
 
 from ultimate_search.config import AppConfig
@@ -79,9 +80,8 @@ def render_result() -> None:
     st.subheader("Evidence")
     rows = [item.to_row() for item in result.evidence]
     if rows:
-        df = pd.DataFrame(rows)
         st.dataframe(
-            df,
+            rows,
             use_container_width=True,
             hide_index=True,
             column_config={
@@ -90,13 +90,17 @@ def render_result() -> None:
             },
         )
 
-        csv = df.to_csv(index=False).encode("utf-8")
-        xlsx = evidence_to_xlsx(df)
+        csv_buffer = StringIO()
+        writer = csv.DictWriter(csv_buffer, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+        csv_bytes = csv_buffer.getvalue().encode("utf-8")
+        xlsx = evidence_to_xlsx(rows)
         docx = brief_to_docx(result.brief, result.evidence, result.request.question)
 
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.download_button("CSV", csv, "ultimate_search_evidence.csv", "text/csv", use_container_width=True)
+            st.download_button("CSV", csv_bytes, "ultimate_search_evidence.csv", "text/csv", use_container_width=True)
         with c2:
             st.download_button(
                 "Excel",
